@@ -1,11 +1,18 @@
 'use strict';
 
 var imagesShown = 3; //number of images to show on the page
+var imageParent = document.getElementsByTagName('main')[0];
+for (let i = 0; i < imagesShown; i++){
+  addElement('img','','displayItem',imageParent);
+  let newElement = document.getElementsByClassName('displayItem')[i];
+  newElement.setAttribute('src', '');
+  newElement.setAttribute('alt', '');
+}
 //Need to use the DOM to grab access objects on page
 //Keep imgElements as a nodelist? Can be accesses with imgElements[0] etc
 var imgElements = document.getElementsByClassName('displayItem');
 var clickCounter = 0;
-var maxClicks = 5;
+var maxClicks = 25;
 
 //Needs a Product object
 //Product object needs path to image, alt text, maybe Id?
@@ -84,7 +91,11 @@ function updateIndices(){
   }
   generateNewIndices();
 }
-var imgIndices = [0,0,0,0,0,0];
+var imgIndices = [];
+
+for (let i = 0; i < imagesShown*2; i++){
+  imgIndices.push(0);
+}
 
 function randomImages(){
   updateIndices();
@@ -120,25 +131,30 @@ function imageOnClick(){
 }
 
 function displayResults(){
-  var targetNode = imgElements[0].parentNode;
+  let targetNode = document.getElementsByTagName('h2')[0];
+  targetNode.textContent = 'The results are in!';
+  targetNode = imgElements[0].parentNode;
   for(var i = imgElements.length; i > 0; i--){
     imgElements[i-1].removeEventListener('click', imageOnClick);
     imgElements[i-1].parentNode.removeChild(imgElements[i-1]);
   }
-  addElement('ul','',targetNode);
+  addElement('ul','','',targetNode);
   targetNode = document.getElementsByTagName('ul')[0];
-  /*for(var x = 0; x < Product.allProducts.length; x++){
+  for(var x = 0; x < Product.allProducts.length; x++){
     var liString = Product.allProducts[x].altText + ' was seen ' + Product.allProducts[x].numShown + ' times and clicked ' + Product.allProducts[x].numClicked + ' times.';
-    addElement('li', liString, targetNode);
-  }*/
+    addElement('li', liString, '', targetNode);
+  }
 }
 
-//DOM addition from previous lab
-function addElement(tag,elementContent,parentElement){
+//DOM addition from previous lab - modified to add class
+function addElement(tag,elementContent,elementClass,parentElement){
   let newElement = document.createElement(tag);
   if(elementContent){
     let newElementContent = document.createTextNode(elementContent);
     newElement.appendChild(newElementContent);
+  }
+  if(elementClass){
+    newElement.classList.add(elementClass);
   }
   parentElement.appendChild(newElement);
   return(newElement);
