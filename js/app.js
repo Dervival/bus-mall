@@ -1,5 +1,6 @@
 'use strict';
 
+var imagesShown = 3; //number of images to show on the page
 //Need to use the DOM to grab access objects on page
 //Keep imgElements as a nodelist? Can be accesses with imgElements[0] etc
 var imgElements = document.getElementsByClassName('displayItem');
@@ -48,6 +49,60 @@ for(let i = 0; i < Product.allProducts.length; i++){
 }*/
 
 //Set of random, unique indicies need to be generated on click
+//Generate them one at a time
+function randomIndex(){
+  return Math.floor(Math.random() * Product.allProducts.length);
+}
+
+function generateNewIndices(){
+  for(let i = 0; i < imgElements.length; i++){
+    let newIndex = randomIndex();
+    //do some validation for unique indicies here
+    while(bIndexCollision(newIndex, imgIndices)){
+      newIndex = randomIndex();
+    }
+    imgIndices[(i+ imagesShown)] = newIndex;
+  }
+}
+
+function bIndexCollision(index, values){
+  for(let i = 0; i < values.length; i++){
+    if(values[i] === index){
+      //console.log('Collision found at index ' + i);
+      return true;
+    }
+  }
+  //console.log('No collisions found.');
+  return false;
+}
+
+function updateIndices(){
+  for(let i = 0; i < imagesShown; i++){
+    imgIndices[i] = imgIndices[i+imagesShown];
+  }
+  generateNewIndices();
+}
+var imgIndices = [-1,-1,-1,-1,-1,-1];
+
+for(var x = 0; x < 20; x++){
+  updateIndices();
+  console.log(imgIndices);
+}
+
+function randomImages(){
+  updateIndices();
+  imgElements[0].src = Product.allProducts[imgIndices[0]].imgSource;
+  imgElements[0].alt = Product.allProducts[imgIndices[0]].altText;
+}
+
+randomImages();
+/*console.log(imgIndices);
+removeCurrentImages();
+console.log(imgIndices);
+removeCurrentImages();
+console.log(imgIndices);
+removeCurrentImages();*/
+
 //indices need to also be unique between sets
 ////Create an array of 2N indices, where N is the number of products being shown; first half is for objects currently being shown, second half is for objects to be shown next
 ////Make array initially full of nulls?
