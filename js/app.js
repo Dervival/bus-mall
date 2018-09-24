@@ -1,13 +1,6 @@
 'use strict';
 
-var imagesShown = 3; //number of images to show on the page
-var imageParent = document.getElementsByTagName('main')[0];
-for (let i = 0; i < imagesShown; i++){
-  addElement('img','','displayItem',imageParent);
-  let newElement = document.getElementsByClassName('displayItem')[i];
-  newElement.setAttribute('src', '');
-  newElement.setAttribute('alt', '');
-}
+
 //Need to use the DOM to grab access objects on page
 //Keep imgElements as a nodelist? Can be accesses with imgElements[0] etc
 var imgElements = document.getElementsByClassName('displayItem');
@@ -51,6 +44,17 @@ new Product('img/unicorn.jpg','unicorn');
 new Product('img/usb.gif','usb');
 new Product('img/water-can.jpg','water-can');
 new Product('img/wine-glass.jpg','wine-glass');
+
+var imagesShown = 3; //number of images to show on the page
+//Since we can't show an item two selections in a row, we can only display half of given elements at a time; use min to make sure imagesShown is capped at that limit
+imagesShown = Math.min(imagesShown, Math.floor(Product.allProducts.length/2));
+var imageParent = document.getElementsByTagName('main')[0];
+for (let i = 0; i < imagesShown; i++){
+  addElement('img','','displayItem',imageParent);
+  let newElement = document.getElementsByClassName('displayItem')[i];
+  newElement.setAttribute('src', '');
+  newElement.setAttribute('alt', '');
+}
 
 /*console.log(Product.allProducts.length + ' objects created:');
 for(let i = 0; i < Product.allProducts.length; i++){
