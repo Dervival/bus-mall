@@ -1,0 +1,10 @@
+main{
+  background-color: #dddddd;
+}
+main img{
+  box-sizing: border-box;
+  background-color: gray;
+  margin: 2%;
+  padding: 1%;
+  width: 25%;
+}

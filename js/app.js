@@ -4,6 +4,8 @@ var imagesShown = 3; //number of images to show on the page
 //Need to use the DOM to grab access objects on page
 //Keep imgElements as a nodelist? Can be accesses with imgElements[0] etc
 var imgElements = document.getElementsByClassName('displayItem');
+var clickCounter = 0;
+var maxClicks = 5;
 
 //Needs a Product object
 //Product object needs path to image, alt text, maybe Id?
@@ -36,7 +38,7 @@ new Product('img/pen.jpg','pen');
 new Product('img/pet-sweep.jpg','pet-sweep');
 new Product('img/scissors.jpg','scissors');
 new Product('img/shark.jpg','shark');
-new Product('img/sweep.jpg','sweep');
+new Product('img/sweep.png','sweep');
 new Product('img/tauntaun.jpg','tauntaun');
 new Product('img/unicorn.jpg','unicorn');
 new Product('img/usb.gif','usb');
@@ -54,6 +56,8 @@ function randomIndex(){
   return Math.floor(Math.random() * Product.allProducts.length);
 }
 
+//Create an array of 2N indices, where N is the number of products being shown; first half is for objects currently being shown, second half is for objects to be shown next
+
 function generateNewIndices(){
   for(let i = 0; i < imgElements.length; i++){
     let newIndex = randomIndex();
@@ -68,11 +72,9 @@ function generateNewIndices(){
 function bIndexCollision(index, values){
   for(let i = 0; i < values.length; i++){
     if(values[i] === index){
-      //console.log('Collision found at index ' + i);
       return true;
     }
   }
-  //console.log('No collisions found.');
   return false;
 }
 
@@ -82,30 +84,72 @@ function updateIndices(){
   }
   generateNewIndices();
 }
-var imgIndices = [-1,-1,-1,-1,-1,-1];
-
-for(var x = 0; x < 20; x++){
-  updateIndices();
-  console.log(imgIndices);
-}
+var imgIndices = [0,0,0,0,0,0];
 
 function randomImages(){
   updateIndices();
-  imgElements[0].src = Product.allProducts[imgIndices[0]].imgSource;
-  imgElements[0].alt = Product.allProducts[imgIndices[0]].altText;
+  for (var i = 0; i < imagesShown; i++){
+    imgElements[i].src = Product.allProducts[imgIndices[i]].imgSource;
+    imgElements[i].alt = Product.allProducts[imgIndices[i]].altText;
+    Product.allProducts[imgIndices[i]].numShown++;
+  }
 }
 
-randomImages();
-/*console.log(imgIndices);
-removeCurrentImages();
-console.log(imgIndices);
-removeCurrentImages();
-console.log(imgIndices);
-removeCurrentImages();*/
+randomImages();//seed the first three images...
+randomImages();//and the next three images
 
-//indices need to also be unique between sets
-////Create an array of 2N indices, where N is the number of products being shown; first half is for objects currently being shown, second half is for objects to be shown next
-////Make array initially full of nulls?
+//event handler
+function imageOnClick(){
+  var clickedElement = this;
+  clickCounter++;
+  console.log('user has clicked ' + clickCounter + ' times.');
+  console.log('user clicked on ' + clickedElement.alt);
+  for(let i = 0; i < Product.allProducts.length; i++){
+    if(Product.allProducts[i].altText === clickedElement.alt){
+      Product.allProducts[i].numClicked++;
+      console.log(clickedElement.alt + ' has been clicked ' + Product.allProducts[i].numClicked + ' times.');
+    }
+  }
+  if(clickCounter < maxClicks){
+    randomImages();
+  }
+  //After X clicks (X=25 in the final version), kill event listeners and display results
+  else{
+    displayResults();
+  }
+}
+
+function displayResults(){
+  var targetNode = imgElements[0].parentNode;
+  for(var i = imgElements.length; i > 0; i--){
+    imgElements[i-1].removeEventListener('click', imageOnClick);
+    imgElements[i-1].parentNode.removeChild(imgElements[i-1]);
+  }
+  addElement('ul','',targetNode);
+  targetNode = document.getElementsByTagName('ul')[0];
+  /*for(var x = 0; x < Product.allProducts.length; x++){
+    var liString = Product.allProducts[x].altText + ' was seen ' + Product.allProducts[x].numShown + ' times and clicked ' + Product.allProducts[x].numClicked + ' times.';
+    addElement('li', liString, targetNode);
+  }*/
+}
+
+//DOM addition from previous lab
+function addElement(tag,elementContent,parentElement){
+  let newElement = document.createElement(tag);
+  if(elementContent){
+    let newElementContent = document.createTextNode(elementContent);
+    newElement.appendChild(newElementContent);
+  }
+  parentElement.appendChild(newElement);
+  return(newElement);
+}
+
+//event listener
+for(var i = 0; i < imgElements.length; i++){
+  imgElements[i].addEventListener('click', imageOnClick);
+}
+
+
 ////On click, move second half of array into first half, then regenerate second half
 ////Generate second half while checking to make sure indices are not duplicated within the entire array
 ////When moving items into the first half of the array, increment the "seen" counter
@@ -114,4 +158,4 @@ removeCurrentImages();*/
 //Create an event listener for each product being displayed
 //On click, increment the "clicked" counter and regenerate items to be shown
 
-//After X clicks (X=25 in the final version), kill event listeners and display results
+
