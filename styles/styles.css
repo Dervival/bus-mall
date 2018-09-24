@@ -1,10 +1,37 @@
+h1{
+  color: #111111;
+  font-family: arial, sans-serif;
+  font-size: 48px;
+  font-style: italic;
+  text-align: center;
+}
+
+h2{
+  font-family: 'Times New Roman', serif;
+  font-size: 36px;
+  padding-top: 0.5%;
+  text-align: center;
+}
+
 main{
   background-color: #dddddd;
+  overflow: hidden;
 }
+
 main img{
-  box-sizing: border-box;
   background-color: gray;
+  box-sizing: border-box;
   margin: 2%;
   padding: 1%;
-  width: 25%;
+  width: 29%;
+}
+
+main ul{
+  border-top: 1px dashed #111111;
+}
+main li{
+  border-bottom: 1px dashed #111111;
+  margin: .1%;
+  text-align: center;
+  padding: .2%;
 }
