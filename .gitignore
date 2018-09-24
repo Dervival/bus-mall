@@ -1,0 +1,12 @@
+## Base content for .gitignore taken from the CodeFellows 
+## "Setting Up a New Project" guide for Code 201 
+
+# Mac OS files
+.DS_Store
+
+# Logs
+logs
+*.log
+
+# Optional eslint cache
+.eslintcache
