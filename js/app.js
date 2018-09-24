@@ -1,6 +1,5 @@
 'use strict';
 
-
 //Need to use the DOM to grab access objects on page
 //Keep imgElements as a nodelist? Can be accesses with imgElements[0] etc
 var imgElements = document.getElementsByClassName('displayItem');
@@ -56,10 +55,6 @@ for (let i = 0; i < imagesShown; i++){
   newElement.setAttribute('alt', '');
 }
 
-/*console.log(Product.allProducts.length + ' objects created:');
-for(let i = 0; i < Product.allProducts.length; i++){
-  console.log(Product.allProducts[i]);
-}*/
 
 //Set of random, unique indicies need to be generated on click
 //Generate them one at a time
@@ -68,7 +63,12 @@ function randomIndex(){
 }
 
 //Create an array of 2N indices, where N is the number of products being shown; first half is for objects currently being shown, second half is for objects to be shown next
+var imgIndices = [];
+for (let i = 0; i < imagesShown*2; i++){
+  imgIndices.push(0);
+}
 
+//Generates new index values for the last half of imgIndices; the first half was generated in the set previously;
 function generateNewIndices(){
   for(let i = 0; i < imgElements.length; i++){
     let newIndex = randomIndex();
@@ -80,6 +80,7 @@ function generateNewIndices(){
   }
 }
 
+//Checks to make sure that the index being added isn't already in the array - returns true if it finds a collision, false otherwise
 function bIndexCollision(index, values){
   for(let i = 0; i < values.length; i++){
     if(values[i] === index){
@@ -89,18 +90,15 @@ function bIndexCollision(index, values){
   return false;
 }
 
+//Two step process; move previously generated indices into the "display" half of the array, generates new indices for the "next" half of the array
 function updateIndices(){
   for(let i = 0; i < imagesShown; i++){
     imgIndices[i] = imgIndices[i+imagesShown];
   }
   generateNewIndices();
 }
-var imgIndices = [];
 
-for (let i = 0; i < imagesShown*2; i++){
-  imgIndices.push(0);
-}
-
+//Refreshes the array of indices, pushing the second half of the array into the first half; regenerates the images shown based off of the newly pushed values
 function randomImages(){
   updateIndices();
   for (var i = 0; i < imagesShown; i++){
@@ -110,30 +108,30 @@ function randomImages(){
   }
 }
 
-randomImages();//seed the first three images...
-randomImages();//and the next three images
+randomImages();//seeding the first half of the array...
+randomImages();//pushing the first half to its proper place, seeding the second half
 
-//event handler
+//event handler - increment the click counter, increment the appropriate numClick counter, either refresh the images (if clicks aren't at max) or swap to results (if they are at or past max)
 function imageOnClick(){
   var clickedElement = this;
   clickCounter++;
-  console.log('user has clicked ' + clickCounter + ' times.');
-  console.log('user clicked on ' + clickedElement.alt);
+  //console.log('user has clicked ' + clickCounter + ' times.');
+  //console.log('user clicked on ' + clickedElement.alt);
   for(let i = 0; i < Product.allProducts.length; i++){
     if(Product.allProducts[i].altText === clickedElement.alt){
       Product.allProducts[i].numClicked++;
-      console.log(clickedElement.alt + ' has been clicked ' + Product.allProducts[i].numClicked + ' times.');
+      //console.log(clickedElement.alt + ' has been clicked ' + Product.allProducts[i].numClicked + ' times.');
     }
   }
   if(clickCounter < maxClicks){
     randomImages();
   }
-  //After X clicks (X=25 in the final version), kill event listeners and display results
   else{
     displayResults();
   }
 }
 
+//Remove all event listeners, delete content of the body of the page, rebuild with list content
 function displayResults(){
   let targetNode = document.getElementsByTagName('h2')[0];
   targetNode.textContent = 'The results are in!';
@@ -150,7 +148,7 @@ function displayResults(){
   }
 }
 
-//DOM addition from previous lab - modified to add class
+//DOM addition from previous lab - modified to add class to elements
 function addElement(tag,elementContent,elementClass,parentElement){
   let newElement = document.createElement(tag);
   if(elementContent){
@@ -164,18 +162,12 @@ function addElement(tag,elementContent,elementClass,parentElement){
   return(newElement);
 }
 
-//event listener
+//event listener for images
 for(var i = 0; i < imgElements.length; i++){
   imgElements[i].addEventListener('click', imageOnClick);
 }
 
 
-////On click, move second half of array into first half, then regenerate second half
-////Generate second half while checking to make sure indices are not duplicated within the entire array
-////When moving items into the first half of the array, increment the "seen" counter
-////When item is clicked, increment the clicked counter
 
-//Create an event listener for each product being displayed
-//On click, increment the "clicked" counter and regenerate items to be shown
 
 
