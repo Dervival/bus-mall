@@ -5,6 +5,9 @@
 var imgElements = document.getElementsByClassName('displayItem');
 var clickCounter = 0;
 var maxClicks = 25;
+//number of images to show on the page - will be capped at # of all products later
+var imagesShown = 3;
+var imgIndices = [];
 
 //Needs a Product object
 //Product object needs path to image, alt text, maybe Id?
@@ -21,40 +24,57 @@ function Product(filepath, displayText){
 //product objects needs to be stored in an array
 Product.allProducts = [];
 
-//Generate Product objects for each item
-//Probably a better way to do this with looping through a directory...
-new Product('img/bag.jpg','bag');
-new Product('img/banana.jpg','banana');
-new Product('img/bathroom.jpg','bathroom');
-new Product('img/boots.jpg','boots');
-new Product('img/breakfast.jpg','breakfast');
-new Product('img/bubblegum.jpg','bubblegum');
-new Product('img/chair.jpg','chair');
-new Product('img/cthulhu.jpg','cthulhu');
-new Product('img/dog-duck.jpg','dog-duck');
-new Product('img/dragon.jpg','dragon');
-new Product('img/pen.jpg','pen');
-new Product('img/pet-sweep.jpg','pet-sweep');
-new Product('img/scissors.jpg','scissors');
-new Product('img/shark.jpg','shark');
-new Product('img/sweep.png','sweep');
-new Product('img/tauntaun.jpg','tauntaun');
-new Product('img/unicorn.jpg','unicorn');
-new Product('img/usb.gif','usb');
-new Product('img/water-can.jpg','water-can');
-new Product('img/wine-glass.jpg','wine-glass');
 
-var imagesShown = 3; //number of images to show on the page
-//Since we can't show an item two selections in a row, we can only display half of given elements at a time; use min to make sure imagesShown is capped at that limit
-imagesShown = Math.min(imagesShown, Math.floor(Product.allProducts.length/2));
-var imageParent = document.getElementsByTagName('main')[0];
-for (let i = 0; i < imagesShown; i++){
-  addElement('img','','displayItem',imageParent);
-  let newElement = document.getElementsByClassName('displayItem')[i];
-  newElement.setAttribute('src', '');
-  newElement.setAttribute('alt', '');
+function initializeBusMall(){
+  buildProducts();
+  //Since we can't show an item two selections in a row, we can only display half of given elements at a time; use min to make sure imagesShown is capped at that limit
+  imagesShown = Math.min(imagesShown, Math.floor(Product.allProducts.length/2));
+  initializeImageElements();
+  initializeIndices();
+  randomImages();//seeding the first half of the array...
+  randomImages();//pushing the first half to its proper place, seeding the second half
 }
 
+function buildProducts(){
+  //Probably a better way to do this with looping through a directory...
+  new Product('img/bag.jpg','bag');
+  new Product('img/banana.jpg','banana');
+  new Product('img/bathroom.jpg','bathroom');
+  new Product('img/boots.jpg','boots');
+  new Product('img/breakfast.jpg','breakfast');
+  new Product('img/bubblegum.jpg','bubblegum');
+  new Product('img/chair.jpg','chair');
+  new Product('img/cthulhu.jpg','cthulhu');
+  new Product('img/dog-duck.jpg','dog-duck');
+  new Product('img/dragon.jpg','dragon');
+  new Product('img/pen.jpg','pen');
+  new Product('img/pet-sweep.jpg','pet-sweep');
+  new Product('img/scissors.jpg','scissors');
+  new Product('img/shark.jpg','shark');
+  new Product('img/sweep.png','sweep');
+  new Product('img/tauntaun.jpg','tauntaun');
+  new Product('img/unicorn.jpg','unicorn');
+  new Product('img/usb.gif','usb');
+  new Product('img/water-can.jpg','water-can');
+  new Product('img/wine-glass.jpg','wine-glass');
+}
+
+function initializeImageElements(){
+  var imageParent = document.getElementsByTagName('main')[0];
+  for (let i = 0; i < imagesShown; i++){
+    addElement('img','','displayItem',imageParent);
+    let newElement = document.getElementsByClassName('displayItem')[i];
+    newElement.setAttribute('src', '');
+    newElement.setAttribute('alt', '');
+  }
+}
+
+function initializeIndices(){
+  for (let i = 0; i < imagesShown*2; i++){
+    imgIndices.push(0);
+  }
+}
+initializeBusMall();
 
 //Set of random, unique indicies need to be generated on click
 //Generate them one at a time
@@ -63,10 +83,7 @@ function randomIndex(){
 }
 
 //Create an array of 2N indices, where N is the number of products being shown; first half is for objects currently being shown, second half is for objects to be shown next
-var imgIndices = [];
-for (let i = 0; i < imagesShown*2; i++){
-  imgIndices.push(0);
-}
+
 
 //Generates new index values for the last half of imgIndices; the first half was generated in the set previously;
 function generateNewIndices(){
@@ -108,9 +125,6 @@ function randomImages(){
   }
 }
 
-randomImages();//seeding the first half of the array...
-randomImages();//pushing the first half to its proper place, seeding the second half
-
 //event handler - increment the click counter, increment the appropriate numClick counter, either refresh the images (if clicks aren't at max) or swap to results (if they are at or past max)
 function imageOnClick(){
   var clickedElement = this;
@@ -120,6 +134,7 @@ function imageOnClick(){
   for(let i = 0; i < Product.allProducts.length; i++){
     if(Product.allProducts[i].altText === clickedElement.alt){
       Product.allProducts[i].numClicked++;
+      break;
       //console.log(clickedElement.alt + ' has been clicked ' + Product.allProducts[i].numClicked + ' times.');
     }
   }
