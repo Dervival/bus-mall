@@ -129,13 +129,10 @@ function randomImages(){
 function imageOnClick(){
   var clickedElement = this;
   clickCounter++;
-  //console.log('user has clicked ' + clickCounter + ' times.');
-  //console.log('user clicked on ' + clickedElement.alt);
   for(let i = 0; i < Product.allProducts.length; i++){
     if(Product.allProducts[i].altText === clickedElement.alt){
       Product.allProducts[i].numClicked++;
       break;
-      //console.log(clickedElement.alt + ' has been clicked ' + Product.allProducts[i].numClicked + ' times.');
     }
   }
   if(clickCounter < maxClicks){
@@ -153,14 +150,15 @@ function displayResults(){
   targetNode = imgElements[0].parentNode;
   for(var i = imgElements.length; i > 0; i--){
     imgElements[i-1].removeEventListener('click', imageOnClick);
-    imgElements[i-1].parentNode.removeChild(imgElements[i-1]);
+    //imgElements[i-1].parentNode.removeChild(imgElements[i-1]);
   }
-  addElement('ul','','',targetNode);
+  /*addElement('ul','','',targetNode);
   targetNode = document.getElementsByTagName('ul')[0];
   for(var x = 0; x < Product.allProducts.length; x++){
     var liString = Product.allProducts[x].altText + ' was seen ' + Product.allProducts[x].numShown + ' times and clicked ' + Product.allProducts[x].numClicked + ' times.';
     addElement('li', liString, '', targetNode);
-  }
+  }*/
+  drawGraph();
 }
 
 //DOM addition from previous lab - modified to add class to elements
@@ -184,5 +182,50 @@ for(var i = 0; i < imgElements.length; i++){
 
 
 
+function drawGraph(){
+  var productNames = [];
+  var voteData = [];
+  var chartColors = [];
+  for(let i = 0; i < Product.allProducts.length; i++){
+    productNames.push(Product.allProducts[i].altText);
+    let clickRatio = 0;
+    if(Product.allProducts[i].numShown > 0){
+      clickRatio = Product.allProducts[i].numClicked / Product.allProducts[i].numShown;
+    }
+    voteData.push(Math.floor(clickRatio*100));
+    let barColor = [0,0,0];
+    for(let i = 0; i < barColor.length; i++){
+      barColor[i] = Math.floor(Math.random()*255 + 1);
+    }
+    chartColors.push(getRandomColor());
+  }
+  console.log(chartColors);
+  var ctx = document.getElementById('busMallChart').getContext('2d');
+  var chart = new Chart(ctx, {
+  // The type of chart we want to create
+    type: 'horizontalBar',
 
+    // The data for our dataset
+    data: {
+      labels: productNames,
+      datasets: [{
+        label: 'Results: percentage of times clicked per appearance',
+        backgroundColor: chartColors,
+        borderColor: 'rgb(0,0,255)',
+        data: voteData,
+      }]
+    },
 
+    // Configuration options go here
+    options: {}
+  });
+}
+
+function getRandomColor(){
+  let colorArray = [];
+  for(let i = 0; i < 3; i++){
+    colorArray[i] = Math.floor(Math.random()*255 + 1);
+    console.log(colorArray);
+  }
+  return `rgb(${colorArray[0]},${colorArray[1]},${colorArray[2]})`;
+}
