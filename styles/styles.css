@@ -35,3 +35,7 @@ main li{
   text-align: center;
   padding: .2%;
 }
+
+canvas{
+  padding: -5%;
+}

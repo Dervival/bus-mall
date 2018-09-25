@@ -221,7 +221,7 @@ function drawGraph(){
     data: {
       labels: productNames,
       datasets: [{
-        label: 'Results: percentage of times clicked per appearance',
+        label: 'Results: Popularity (by % of votes)',
         backgroundColor: chartColors,
         borderColor: 'rgb(255,255,255)',
         data: voteData,
@@ -229,7 +229,24 @@ function drawGraph(){
     },
 
     // Configuration options go here
-    options: {}
+    options: {
+      scales: [{
+        yAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Products'
+          }
+        }],
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Percent of times selected when shown'
+          }
+        }],
+      }],
+      responsive: true,
+      maintainAspectRatio: true,
+    }
   });
   chartElement.scrollIntoView();
 }
