@@ -5,6 +5,9 @@
 var imgElements = document.getElementsByClassName('displayItem');
 var clickCounter = 0;
 var maxClicks = 25;
+//number of images to show on the page - will be capped at # of all products later
+var imagesShown = 3;
+var imgIndices = [];
 
 //Needs a Product object
 //Product object needs path to image, alt text, maybe Id?
@@ -21,40 +24,57 @@ function Product(filepath, displayText){
 //product objects needs to be stored in an array
 Product.allProducts = [];
 
-//Generate Product objects for each item
-//Probably a better way to do this with looping through a directory...
-new Product('img/bag.jpg','bag');
-new Product('img/banana.jpg','banana');
-new Product('img/bathroom.jpg','bathroom');
-new Product('img/boots.jpg','boots');
-new Product('img/breakfast.jpg','breakfast');
-new Product('img/bubblegum.jpg','bubblegum');
-new Product('img/chair.jpg','chair');
-new Product('img/cthulhu.jpg','cthulhu');
-new Product('img/dog-duck.jpg','dog-duck');
-new Product('img/dragon.jpg','dragon');
-new Product('img/pen.jpg','pen');
-new Product('img/pet-sweep.jpg','pet-sweep');
-new Product('img/scissors.jpg','scissors');
-new Product('img/shark.jpg','shark');
-new Product('img/sweep.png','sweep');
-new Product('img/tauntaun.jpg','tauntaun');
-new Product('img/unicorn.jpg','unicorn');
-new Product('img/usb.gif','usb');
-new Product('img/water-can.jpg','water-can');
-new Product('img/wine-glass.jpg','wine-glass');
 
-var imagesShown = 3; //number of images to show on the page
-//Since we can't show an item two selections in a row, we can only display half of given elements at a time; use min to make sure imagesShown is capped at that limit
-imagesShown = Math.min(imagesShown, Math.floor(Product.allProducts.length/2));
-var imageParent = document.getElementsByTagName('main')[0];
-for (let i = 0; i < imagesShown; i++){
-  addElement('img','','displayItem',imageParent);
-  let newElement = document.getElementsByClassName('displayItem')[i];
-  newElement.setAttribute('src', '');
-  newElement.setAttribute('alt', '');
+function initializeBusMall(){
+  buildProducts();
+  //Since we can't show an item two selections in a row, we can only display half of given elements at a time; use min to make sure imagesShown is capped at that limit
+  imagesShown = Math.min(imagesShown, Math.floor(Product.allProducts.length/2));
+  initializeImageElements();
+  initializeIndices();
+  randomImages();//seeding the first half of the array...
+  randomImages();//pushing the first half to its proper place, seeding the second half
 }
 
+function buildProducts(){
+  //Probably a better way to do this with looping through a directory...
+  new Product('img/bag.jpg','bag');
+  new Product('img/banana.jpg','banana');
+  new Product('img/bathroom.jpg','bathroom');
+  new Product('img/boots.jpg','boots');
+  new Product('img/breakfast.jpg','breakfast');
+  new Product('img/bubblegum.jpg','bubblegum');
+  new Product('img/chair.jpg','chair');
+  new Product('img/cthulhu.jpg','cthulhu');
+  new Product('img/dog-duck.jpg','dog-duck');
+  new Product('img/dragon.jpg','dragon');
+  new Product('img/pen.jpg','pen');
+  new Product('img/pet-sweep.jpg','pet-sweep');
+  new Product('img/scissors.jpg','scissors');
+  new Product('img/shark.jpg','shark');
+  new Product('img/sweep.png','sweep');
+  new Product('img/tauntaun.jpg','tauntaun');
+  new Product('img/unicorn.jpg','unicorn');
+  new Product('img/usb.gif','usb');
+  new Product('img/water-can.jpg','water-can');
+  new Product('img/wine-glass.jpg','wine-glass');
+}
+
+function initializeImageElements(){
+  var imageParent = document.getElementsByTagName('main')[0];
+  for (let i = 0; i < imagesShown; i++){
+    addElement('img','','displayItem',imageParent);
+    let newElement = document.getElementsByClassName('displayItem')[i];
+    newElement.setAttribute('src', '');
+    newElement.setAttribute('alt', '');
+  }
+}
+
+function initializeIndices(){
+  for (let i = 0; i < imagesShown*2; i++){
+    imgIndices.push(0);
+  }
+}
+initializeBusMall();
 
 //Set of random, unique indicies need to be generated on click
 //Generate them one at a time
@@ -63,10 +83,7 @@ function randomIndex(){
 }
 
 //Create an array of 2N indices, where N is the number of products being shown; first half is for objects currently being shown, second half is for objects to be shown next
-var imgIndices = [];
-for (let i = 0; i < imagesShown*2; i++){
-  imgIndices.push(0);
-}
+
 
 //Generates new index values for the last half of imgIndices; the first half was generated in the set previously;
 function generateNewIndices(){
@@ -108,26 +125,29 @@ function randomImages(){
   }
 }
 
-randomImages();//seeding the first half of the array...
-randomImages();//pushing the first half to its proper place, seeding the second half
-
 //event handler - increment the click counter, increment the appropriate numClick counter, either refresh the images (if clicks aren't at max) or swap to results (if they are at or past max)
 function imageOnClick(){
+  event.stopPropagation();
+  let warningNode = document.getElementsByTagName('h2')[0];
   var clickedElement = this;
-  clickCounter++;
-  //console.log('user has clicked ' + clickCounter + ' times.');
-  //console.log('user clicked on ' + clickedElement.alt);
-  for(let i = 0; i < Product.allProducts.length; i++){
-    if(Product.allProducts[i].altText === clickedElement.alt){
-      Product.allProducts[i].numClicked++;
-      //console.log(clickedElement.alt + ' has been clicked ' + Product.allProducts[i].numClicked + ' times.');
+  if(this.alt){
+    clickCounter++;
+    for(let i = 0; i < Product.allProducts.length; i++){
+      if(Product.allProducts[i].altText === clickedElement.alt){
+        Product.allProducts[i].numClicked++;
+        break;
+      }
+    }
+    if(clickCounter < maxClicks){
+      randomImages();
+      warningNode.textContent = 'Choose your favorite of the following';
+    }
+    else{
+      displayResults();
     }
   }
-  if(clickCounter < maxClicks){
-    randomImages();
-  }
   else{
-    displayResults();
+    warningNode.textContent = 'Please only click on the images.';
   }
 }
 
@@ -135,17 +155,20 @@ function imageOnClick(){
 function displayResults(){
   let targetNode = document.getElementsByTagName('h2')[0];
   targetNode.textContent = 'The results are in!';
+  let bodyElement = document.getElementsByTagName('body')[0];
+  bodyElement.removeEventListener('click', imageOnClick);
   targetNode = imgElements[0].parentNode;
   for(var i = imgElements.length; i > 0; i--){
     imgElements[i-1].removeEventListener('click', imageOnClick);
-    imgElements[i-1].parentNode.removeChild(imgElements[i-1]);
+    //imgElements[i-1].parentNode.removeChild(imgElements[i-1]);
   }
-  addElement('ul','','',targetNode);
+  /*addElement('ul','','',targetNode);
   targetNode = document.getElementsByTagName('ul')[0];
   for(var x = 0; x < Product.allProducts.length; x++){
     var liString = Product.allProducts[x].altText + ' was seen ' + Product.allProducts[x].numShown + ' times and clicked ' + Product.allProducts[x].numClicked + ' times.';
     addElement('li', liString, '', targetNode);
-  }
+  }*/
+  drawGraph();
 }
 
 //DOM addition from previous lab - modified to add class to elements
@@ -167,7 +190,71 @@ for(var i = 0; i < imgElements.length; i++){
   imgElements[i].addEventListener('click', imageOnClick);
 }
 
+//event listener for the user not clicking an image
+var bodyElement = document.getElementsByTagName('body')[0];
+bodyElement.addEventListener('click', imageOnClick);
 
+function drawGraph(){
+  var productNames = [];
+  var voteData = [];
+  var chartColors = [];
+  for(let i = 0; i < Product.allProducts.length; i++){
+    productNames.push(Product.allProducts[i].altText);
+    let clickRatio = 0;
+    if(Product.allProducts[i].numShown > 0){
+      clickRatio = Product.allProducts[i].numClicked / Product.allProducts[i].numShown;
+    }
+    voteData.push(Math.floor(clickRatio*100));
+    let barColor = [0,0,0];
+    for(let i = 0; i < barColor.length; i++){
+      barColor[i] = Math.floor(Math.random()*255 + 1);
+    }
+    chartColors.push(getRandomColor());
+  }
+  let chartElement = document.getElementById('busMallChart');
+  var ctx = chartElement.getContext('2d');
+  var chart = new Chart(ctx, {
+  // The type of chart we want to create
+    type: 'horizontalBar',
 
+    // The data for our dataset
+    data: {
+      labels: productNames,
+      datasets: [{
+        label: 'Results: Popularity (by % of votes)',
+        backgroundColor: chartColors,
+        borderColor: 'rgb(255,255,255)',
+        data: voteData,
+      }]
+    },
 
+    // Configuration options go here
+    options: {
+      scales: [{
+        yAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Products'
+          }
+        }],
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Percent of times selected when shown'
+          }
+        }],
+      }],
+      responsive: true,
+      maintainAspectRatio: true,
+    }
+  });
+  chartElement.scrollIntoView();
+}
 
+function getRandomColor(){
+  let colorArray = [];
+  for(let i = 0; i < 3; i++){
+    colorArray[i] = Math.floor(Math.random()*255 + 1);
+  }
+  return `rgb(${colorArray[0]},${colorArray[1]},${colorArray[2]})`;
+}
