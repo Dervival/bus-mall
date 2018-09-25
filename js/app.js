@@ -127,19 +127,27 @@ function randomImages(){
 
 //event handler - increment the click counter, increment the appropriate numClick counter, either refresh the images (if clicks aren't at max) or swap to results (if they are at or past max)
 function imageOnClick(){
+  event.stopPropagation();
+  let warningNode = document.getElementsByTagName('h2')[0];
   var clickedElement = this;
-  clickCounter++;
-  for(let i = 0; i < Product.allProducts.length; i++){
-    if(Product.allProducts[i].altText === clickedElement.alt){
-      Product.allProducts[i].numClicked++;
-      break;
+  if(this.alt){
+    clickCounter++;
+    for(let i = 0; i < Product.allProducts.length; i++){
+      if(Product.allProducts[i].altText === clickedElement.alt){
+        Product.allProducts[i].numClicked++;
+        break;
+      }
+    }
+    if(clickCounter < maxClicks){
+      randomImages();
+      warningNode.textContent = 'Choose your favorite of the following';
+    }
+    else{
+      displayResults();
     }
   }
-  if(clickCounter < maxClicks){
-    randomImages();
-  }
   else{
-    displayResults();
+    warningNode.textContent = 'Please only click on the images.';
   }
 }
 
@@ -147,6 +155,8 @@ function imageOnClick(){
 function displayResults(){
   let targetNode = document.getElementsByTagName('h2')[0];
   targetNode.textContent = 'The results are in!';
+  let bodyElement = document.getElementsByTagName('body')[0];
+  bodyElement.removeEventListener('click', imageOnClick);
   targetNode = imgElements[0].parentNode;
   for(var i = imgElements.length; i > 0; i--){
     imgElements[i-1].removeEventListener('click', imageOnClick);
@@ -180,7 +190,9 @@ for(var i = 0; i < imgElements.length; i++){
   imgElements[i].addEventListener('click', imageOnClick);
 }
 
-
+//event listener for the user not clicking an image
+var bodyElement = document.getElementsByTagName('body')[0];
+bodyElement.addEventListener('click', imageOnClick);
 
 function drawGraph(){
   var productNames = [];
@@ -199,8 +211,8 @@ function drawGraph(){
     }
     chartColors.push(getRandomColor());
   }
-  console.log(chartColors);
-  var ctx = document.getElementById('busMallChart').getContext('2d');
+  let chartElement = document.getElementById('busMallChart');
+  var ctx = chartElement.getContext('2d');
   var chart = new Chart(ctx, {
   // The type of chart we want to create
     type: 'horizontalBar',
@@ -211,7 +223,7 @@ function drawGraph(){
       datasets: [{
         label: 'Results: percentage of times clicked per appearance',
         backgroundColor: chartColors,
-        borderColor: 'rgb(0,0,255)',
+        borderColor: 'rgb(255,255,255)',
         data: voteData,
       }]
     },
@@ -219,13 +231,13 @@ function drawGraph(){
     // Configuration options go here
     options: {}
   });
+  chartElement.scrollIntoView();
 }
 
 function getRandomColor(){
   let colorArray = [];
   for(let i = 0; i < 3; i++){
     colorArray[i] = Math.floor(Math.random()*255 + 1);
-    console.log(colorArray);
   }
   return `rgb(${colorArray[0]},${colorArray[1]},${colorArray[2]})`;
 }
