@@ -20,24 +20,31 @@ main{
 
 main img{
   background-color: gray;
+  border-radius: 5%;
   box-sizing: border-box;
   margin: 2%;
   padding: 1%;
   width: 29%;
 }
 
-main ul{
-  border-top: 1px dashed #111111;
+main img:hover{
+  transition: 300ms;
+  padding: 0%;
+  width: 30%;
 }
-main li{
-  border-bottom: 1px dashed #111111;
-  margin: .1%;
-  text-align: center;
-  padding: .2%;
+
+main img:active{
+  transition: 300ms;
+  transform: rotateZ('360');
 }
 
 section{
   margin-left: auto;
   margin-right: auto;
   width:80%;
+}
+
+chart{
+  margin: .5%;
+  padding: .5%;
 }
