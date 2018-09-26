@@ -4,7 +4,7 @@
 //Keep imgElements as a nodelist? Can be accesses with imgElements[0] etc
 var imgElements = document.getElementsByClassName('displayItem');
 var clickCounter = 0;
-var maxClicks = 25;
+var maxClicks = 5;
 //number of images to show on the page - will be capped at # of all products later
 var imagesShown = 3;
 var imgIndices = [];
@@ -26,13 +26,24 @@ Product.allProducts = [];
 
 
 function initializeBusMall(){
-  buildProducts();
+  initializeLocalStorage();
   //Since we can't show an item two selections in a row, we can only display half of given elements at a time; use min to make sure imagesShown is capped at that limit
   imagesShown = Math.min(imagesShown, Math.floor(Product.allProducts.length/2));
   initializeImageElements();
   initializeIndices();
   randomImages();//seeding the first half of the array...
   randomImages();//pushing the first half to its proper place, seeding the second half
+}
+
+function initializeLocalStorage(){
+  var myProducts = localStorage.getItem('products');
+  if(!myProducts){
+    buildProducts();
+  }
+  else{
+    Product.allProducts = JSON.parse(myProducts);
+  }
+  console.log(myProducts);
 }
 
 function buildProducts(){
@@ -57,6 +68,8 @@ function buildProducts(){
   new Product('img/usb.gif','usb');
   new Product('img/water-can.jpg','water-can');
   new Product('img/wine-glass.jpg','wine-glass');
+
+  localStorage.setItem('products', JSON.stringify(Product.allProducts));
 }
 
 function initializeImageElements(){
@@ -141,6 +154,7 @@ function imageOnClick(){
     if(clickCounter < maxClicks){
       randomImages();
       warningNode.textContent = 'Choose your favorite of the following';
+      localStorage.setItem('products', JSON.stringify(Product.allProducts));
     }
     else{
       displayResults();
@@ -168,6 +182,7 @@ function displayResults(){
     var liString = Product.allProducts[x].altText + ' was seen ' + Product.allProducts[x].numShown + ' times and clicked ' + Product.allProducts[x].numClicked + ' times.';
     addElement('li', liString, '', targetNode);
   }*/
+  localStorage.setItem('products', JSON.stringify(Product.allProducts));
   drawGraph();
 }
 
