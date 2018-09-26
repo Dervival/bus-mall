@@ -26,13 +26,26 @@ Product.allProducts = [];
 
 
 function initializeBusMall(){
-  buildProducts();
+  initializeLocalStorage();
   //Since we can't show an item two selections in a row, we can only display half of given elements at a time; use min to make sure imagesShown is capped at that limit
   imagesShown = Math.min(imagesShown, Math.floor(Product.allProducts.length/2));
   initializeImageElements();
   initializeIndices();
+  console.log('seeding completed');
+  console.log(imgIndices);
   randomImages();//seeding the first half of the array...
   randomImages();//pushing the first half to its proper place, seeding the second half
+}
+
+function initializeLocalStorage(){
+  var myProducts = localStorage.getItem('products');
+  if(!myProducts){
+    buildProducts();
+  }
+  else{
+    Product.allProducts = JSON.parse(myProducts);
+  }
+  //console.log(myProducts);
 }
 
 function buildProducts(){
@@ -57,6 +70,8 @@ function buildProducts(){
   new Product('img/usb.gif','usb');
   new Product('img/water-can.jpg','water-can');
   new Product('img/wine-glass.jpg','wine-glass');
+
+  localStorage.setItem('products', JSON.stringify(Product.allProducts));
 }
 
 function initializeImageElements(){
@@ -73,6 +88,7 @@ function initializeIndices(){
   for (let i = 0; i < imagesShown*2; i++){
     imgIndices.push(0);
   }
+  Product.allProducts[0].numShown -= 3;
 }
 initializeBusMall();
 
@@ -100,6 +116,7 @@ function generateNewIndices(){
 //Checks to make sure that the index being added isn't already in the array - returns true if it finds a collision, false otherwise
 function bIndexCollision(index, values){
   for(let i = 0; i < values.length; i++){
+    console.log('Seeing if ' + values[i] + ' and ' + index + 'match');
     if(values[i] === index){
       return true;
     }
@@ -141,6 +158,7 @@ function imageOnClick(){
     if(clickCounter < maxClicks){
       randomImages();
       warningNode.textContent = 'Choose your favorite of the following';
+      localStorage.setItem('products', JSON.stringify(Product.allProducts));
     }
     else{
       displayResults();
@@ -162,12 +180,7 @@ function displayResults(){
     imgElements[i-1].removeEventListener('click', imageOnClick);
     //imgElements[i-1].parentNode.removeChild(imgElements[i-1]);
   }
-  /*addElement('ul','','',targetNode);
-  targetNode = document.getElementsByTagName('ul')[0];
-  for(var x = 0; x < Product.allProducts.length; x++){
-    var liString = Product.allProducts[x].altText + ' was seen ' + Product.allProducts[x].numShown + ' times and clicked ' + Product.allProducts[x].numClicked + ' times.';
-    addElement('li', liString, '', targetNode);
-  }*/
+  localStorage.setItem('products', JSON.stringify(Product.allProducts));
   drawGraph();
 }
 
@@ -195,23 +208,34 @@ var bodyElement = document.getElementsByTagName('body')[0];
 bodyElement.addEventListener('click', imageOnClick);
 
 function drawGraph(){
+  var chartParent = document.getElementById('pctChart');
+  addElement('canvas','','busMallChart',chartParent);
+  chartParent = document.getElementById('clickChart');
+  addElement('canvas','','busMallChart',chartParent);
+  chartParent = document.getElementById('seenChart');
+  addElement('canvas','','busMallChart',chartParent);
   var productNames = [];
-  var voteData = [];
   var chartColors = [];
+  //Split this into three functions for readability?
+  var popData = [];
+  var clickData = [];
+  var viewData = [];
   for(let i = 0; i < Product.allProducts.length; i++){
     productNames.push(Product.allProducts[i].altText);
+    clickData.push(Product.allProducts[i].numClicked);
+    viewData.push(Product.allProducts[i].numShown);
     let clickRatio = 0;
     if(Product.allProducts[i].numShown > 0){
       clickRatio = Product.allProducts[i].numClicked / Product.allProducts[i].numShown;
     }
-    voteData.push(Math.floor(clickRatio*100));
+    popData.push(Math.floor(clickRatio*100));
     let barColor = [0,0,0];
     for(let i = 0; i < barColor.length; i++){
       barColor[i] = Math.floor(Math.random()*255 + 1);
     }
     chartColors.push(getRandomColor());
   }
-  let chartElement = document.getElementById('busMallChart');
+  let chartElement = document.getElementsByClassName('busMallChart')[0];
   var ctx = chartElement.getContext('2d');
   var chart = new Chart(ctx, {
   // The type of chart we want to create
@@ -224,7 +248,7 @@ function drawGraph(){
         label: 'Results: Popularity (by % of votes)',
         backgroundColor: chartColors,
         borderColor: 'rgb(255,255,255)',
-        data: voteData,
+        data: popData,
       }]
     },
 
@@ -241,7 +265,7 @@ function drawGraph(){
           scaleLabel: {
             display: true,
             labelString: 'Percent of times selected when shown'
-          }
+          },
         }],
       }],
       responsive: true,
@@ -249,12 +273,92 @@ function drawGraph(){
     }
   });
   chartElement.scrollIntoView();
+  chartElement = document.getElementsByClassName('busMallChart')[1];
+  ctx = chartElement.getContext('2d');
+  chart = new Chart(ctx, {
+  // The type of chart we want to create
+    type: 'horizontalBar',
+
+    // The data for our dataset
+    data: {
+      labels: productNames,
+      datasets: [{
+        label: 'Results: Popularity (by # of votes)',
+        backgroundColor: chartColors,
+        borderColor: 'rgb(255,255,255)',
+        data: clickData,
+      }]
+    },
+
+    // Configuration options go here
+    options: {
+      scales: [{
+        yAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Products'
+          },
+          ticks: {
+            beginAtZero: true
+          }
+        }],
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Number of times clicked'
+          }
+        }],
+      }],
+      responsive: true,
+      maintainAspectRatio: true,
+    }
+  });
+  chartElement = document.getElementsByClassName('busMallChart')[2];
+  ctx = chartElement.getContext('2d');
+  chart = new Chart(ctx, {
+  // The type of chart we want to create
+    type: 'horizontalBar',
+
+    // The data for our dataset
+    data: {
+      labels: productNames,
+      datasets: [{
+        label: 'Results: Times Seen by User',
+        backgroundColor: chartColors,
+        borderColor: 'rgb(255,255,255)',
+        data: viewData,
+      }]
+    },
+
+    // Configuration options go here
+    options: {
+      scales: [{
+        yAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Products'
+          },
+          ticks: {
+            beginAtZero: true
+          }
+        }],
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Number of times seen'
+          },
+        }],
+      }],
+      responsive: true,
+      maintainAspectRatio: true,
+    }
+  });
 }
 
 function getRandomColor(){
   let colorArray = [];
   for(let i = 0; i < 3; i++){
-    colorArray[i] = Math.floor(Math.random()*255 + 1);
+    colorArray[i] = Math.floor(Math.random()*220 + 1);
   }
   return `rgb(${colorArray[0]},${colorArray[1]},${colorArray[2]})`;
 }
