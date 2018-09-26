@@ -1,3 +1,7 @@
+html{
+  background: gray;
+}
+
 h1{
   color: #111111;
   font-family: arial, sans-serif;
@@ -38,6 +42,12 @@ main img:active{
   transform: rotateZ('360');
 }
 
+div{  
+  background: #eeeeee;
+  border-radius: 2%;
+  margin: 0.5%;
+}
+
 section{
   margin-left: auto;
   margin-right: auto;
@@ -45,6 +55,6 @@ section{
 }
 
 chart{
-  margin: .5%;
-  padding: .5%;
+  margin: 5%;
+  padding: 5%;
 }

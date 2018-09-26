@@ -43,7 +43,7 @@ function initializeLocalStorage(){
   else{
     Product.allProducts = JSON.parse(myProducts);
   }
-  console.log(myProducts);
+  //console.log(myProducts);
 }
 
 function buildProducts(){
@@ -211,22 +211,26 @@ bodyElement.addEventListener('click', imageOnClick);
 
 function drawGraph(){
   var productNames = [];
-  var voteData = [];
+  var popData = [];
+  var clickData = [];
+  var viewData = [];
   var chartColors = [];
   for(let i = 0; i < Product.allProducts.length; i++){
     productNames.push(Product.allProducts[i].altText);
+    clickData.push(Product.allProducts[i].numClicked);
+    viewData.push(Product.allProducts[i].numShown);
     let clickRatio = 0;
     if(Product.allProducts[i].numShown > 0){
       clickRatio = Product.allProducts[i].numClicked / Product.allProducts[i].numShown;
     }
-    voteData.push(Math.floor(clickRatio*100));
+    popData.push(Math.floor(clickRatio*100));
     let barColor = [0,0,0];
     for(let i = 0; i < barColor.length; i++){
       barColor[i] = Math.floor(Math.random()*255 + 1);
     }
     chartColors.push(getRandomColor());
   }
-  let chartElement = document.getElementById('busMallChart');
+  let chartElement = document.getElementsByClassName('busMallChart')[0];
   var ctx = chartElement.getContext('2d');
   var chart = new Chart(ctx, {
   // The type of chart we want to create
@@ -239,7 +243,7 @@ function drawGraph(){
         label: 'Results: Popularity (by % of votes)',
         backgroundColor: chartColors,
         borderColor: 'rgb(255,255,255)',
-        data: voteData,
+        data: popData,
       }]
     },
 
@@ -264,12 +268,86 @@ function drawGraph(){
     }
   });
   chartElement.scrollIntoView();
+  chartElement = document.getElementsByClassName('busMallChart')[1];
+  ctx = chartElement.getContext('2d');
+  chart = new Chart(ctx, {
+  // The type of chart we want to create
+    type: 'horizontalBar',
+
+    // The data for our dataset
+    data: {
+      labels: productNames,
+      datasets: [{
+        label: 'Results: Popularity (by # of votes)',
+        backgroundColor: chartColors,
+        borderColor: 'rgb(255,255,255)',
+        data: clickData,
+      }]
+    },
+
+    // Configuration options go here
+    options: {
+      scales: [{
+        yAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Products'
+          }
+        }],
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Number of times clicked'
+          }
+        }],
+      }],
+      responsive: true,
+      maintainAspectRatio: true,
+    }
+  });
+  chartElement = document.getElementsByClassName('busMallChart')[2];
+  ctx = chartElement.getContext('2d');
+  chart = new Chart(ctx, {
+  // The type of chart we want to create
+    type: 'horizontalBar',
+
+    // The data for our dataset
+    data: {
+      labels: productNames,
+      datasets: [{
+        label: 'Results: Times Seen by User',
+        backgroundColor: chartColors,
+        borderColor: 'rgb(255,255,255)',
+        data: clickData,
+      }]
+    },
+
+    // Configuration options go here
+    options: {
+      scales: [{
+        yAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Products'
+          }
+        }],
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Number of times seen'
+          }
+        }],
+      }],
+      responsive: true,
+      maintainAspectRatio: true,
+    }
+  });
 }
 
 function getRandomColor(){
   let colorArray = [];
   for(let i = 0; i < 3; i++){
-    colorArray[i] = Math.floor(Math.random()*255 + 1);
+    colorArray[i] = Math.floor(Math.random()*220 + 1);
   }
   return `rgb(${colorArray[0]},${colorArray[1]},${colorArray[2]})`;
 }
