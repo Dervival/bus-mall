@@ -4,7 +4,7 @@
 //Keep imgElements as a nodelist? Can be accesses with imgElements[0] etc
 var imgElements = document.getElementsByClassName('displayItem');
 var clickCounter = 0;
-var maxClicks = 5;
+var maxClicks = 25;
 //number of images to show on the page - will be capped at # of all products later
 var imagesShown = 3;
 var imgIndices = [];
@@ -31,6 +31,8 @@ function initializeBusMall(){
   imagesShown = Math.min(imagesShown, Math.floor(Product.allProducts.length/2));
   initializeImageElements();
   initializeIndices();
+  console.log('seeding completed');
+  console.log(imgIndices);
   randomImages();//seeding the first half of the array...
   randomImages();//pushing the first half to its proper place, seeding the second half
 }
@@ -86,6 +88,7 @@ function initializeIndices(){
   for (let i = 0; i < imagesShown*2; i++){
     imgIndices.push(0);
   }
+  Product.allProducts[0].numShown -= 3;
 }
 initializeBusMall();
 
@@ -113,6 +116,7 @@ function generateNewIndices(){
 //Checks to make sure that the index being added isn't already in the array - returns true if it finds a collision, false otherwise
 function bIndexCollision(index, values){
   for(let i = 0; i < values.length; i++){
+    console.log('Seeing if ' + values[i] + ' and ' + index + 'match');
     if(values[i] === index){
       return true;
     }
@@ -176,12 +180,6 @@ function displayResults(){
     imgElements[i-1].removeEventListener('click', imageOnClick);
     //imgElements[i-1].parentNode.removeChild(imgElements[i-1]);
   }
-  /*addElement('ul','','',targetNode);
-  targetNode = document.getElementsByTagName('ul')[0];
-  for(var x = 0; x < Product.allProducts.length; x++){
-    var liString = Product.allProducts[x].altText + ' was seen ' + Product.allProducts[x].numShown + ' times and clicked ' + Product.allProducts[x].numClicked + ' times.';
-    addElement('li', liString, '', targetNode);
-  }*/
   localStorage.setItem('products', JSON.stringify(Product.allProducts));
   drawGraph();
 }
@@ -210,11 +208,18 @@ var bodyElement = document.getElementsByTagName('body')[0];
 bodyElement.addEventListener('click', imageOnClick);
 
 function drawGraph(){
+  var chartParent = document.getElementById('pctChart');
+  addElement('canvas','','busMallChart',chartParent);
+  chartParent = document.getElementById('clickChart');
+  addElement('canvas','','busMallChart',chartParent);
+  chartParent = document.getElementById('seenChart');
+  addElement('canvas','','busMallChart',chartParent);
   var productNames = [];
+  var chartColors = [];
+  //Split this into three functions for readability?
   var popData = [];
   var clickData = [];
   var viewData = [];
-  var chartColors = [];
   for(let i = 0; i < Product.allProducts.length; i++){
     productNames.push(Product.allProducts[i].altText);
     clickData.push(Product.allProducts[i].numClicked);
@@ -260,7 +265,7 @@ function drawGraph(){
           scaleLabel: {
             display: true,
             labelString: 'Percent of times selected when shown'
-          }
+          },
         }],
       }],
       responsive: true,
@@ -292,6 +297,9 @@ function drawGraph(){
           scaleLabel: {
             display: true,
             labelString: 'Products'
+          },
+          ticks: {
+            beginAtZero: true
           }
         }],
         xAxes: [{
@@ -318,7 +326,7 @@ function drawGraph(){
         label: 'Results: Times Seen by User',
         backgroundColor: chartColors,
         borderColor: 'rgb(255,255,255)',
-        data: clickData,
+        data: viewData,
       }]
     },
 
@@ -329,13 +337,16 @@ function drawGraph(){
           scaleLabel: {
             display: true,
             labelString: 'Products'
+          },
+          ticks: {
+            beginAtZero: true
           }
         }],
         xAxes: [{
           scaleLabel: {
             display: true,
             labelString: 'Number of times seen'
-          }
+          },
         }],
       }],
       responsive: true,
